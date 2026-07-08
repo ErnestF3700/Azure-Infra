@@ -82,7 +82,7 @@ variable "nat_rule_collections" {
 
       protocols = list(string)
 
-      source_addresses = list(string)A
+      source_addresses = list(string)
 
       destination_address = string
 
