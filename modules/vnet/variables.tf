@@ -43,8 +43,8 @@ variable "address_space" {
   type        = list(string)
 
   validation {
-    condition     = length(var.address_space) <= 20
-    error_message = "At least one virtual network address prefix must be specified."
+    condition     = length(var.address_space) >= 1 && length(var.address_space) <= 20
+    error_message = "Between 1 and 20 virtual network address prefixes must be specified."
   }
 
   validation {
