@@ -24,9 +24,6 @@ jobs:
     name: Terraform Apply
     runs-on: ubuntu-latest
 
-    environment:
-      name: ${{ inputs.environment }}
-
     defaults:
       run:
         working-directory: envs/${{ inputs.environment }}
@@ -37,25 +34,12 @@ jobs:
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: "1.11.4"
 
       - name: Terraform Format Check
         run: terraform fmt -check -recursive ../../
 
-      - name: Azure Login
-        uses: azure/login@v3
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
       - name: Terraform Init
-        run: terraform init
+        run: terraform init -backend=false
 
       - name: Terraform Validate
         run: terraform validate
-
-      - name: Terraform Plan
-        run: terraform plan -out=tfplan
-
-      - name: Terraform Apply
-        run: terraform apply -auto-approve tfplan
