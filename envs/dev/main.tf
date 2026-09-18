@@ -350,3 +350,45 @@ module "firewall_policy" {
 
   tags = var.tags
 }
+
+# ============================================================
+# FIREWALL PUBLIC IP
+# ============================================================
+
+module "firewall_public_ip" {
+  source = "../../modules/public_ip"
+
+  name                = "pip-firewall-${var.environment}-weu"
+  resource_group_name = module.resource_group.name
+  location            = var.location
+
+  allocation_method = "Static"
+  sku               = "Standard"
+
+  tags = var.tags
+}
+
+# ============================================================
+# AZURE FIREWALL
+# ============================================================
+
+module "azure_firewall" {
+  source = "../../modules/azure_firewall"
+
+  name                = "azfw-${var.environment}-weu"
+  resource_group_name = module.resource_group.name
+  location            = var.location
+
+  sku_name = "AZFW_VNet"
+  sku_tier = "Standard"
+
+  firewall_policy_id = module.firewall_policy.id
+
+  ip_configuration = {
+    name                 = "ipconfig-firewall"
+    subnet_id            = module.hub_firewall_subnet.id
+    public_ip_address_id = module.firewall_public_ip.id
+  }
+
+  tags = var.tags
+}

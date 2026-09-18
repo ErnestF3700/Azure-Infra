@@ -50,10 +50,12 @@ variable "management_lock_name" {
   nullable    = true
 
   validation {
-    condition = (
-      var.management_lock_name == null ||
-      (length(trimspace(var.management_lock_name)) >= 1 && length(trimspace(var.management_lock_name)) <= 260)
+    condition = try(
+      length(trimspace(var.management_lock_name)) >= 1 &&
+      length(trimspace(var.management_lock_name)) <= 260,
+      true
     )
+
     error_message = "The management lock name must contain between 1 and 260 characters when specified."
   }
 }

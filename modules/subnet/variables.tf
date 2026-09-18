@@ -1,15 +1,23 @@
 variable "name" {
-  description = "Name of the subnet. The name must follow the Azure CAF convention and start with 'snet-'."
+  description = "Name of the subnet."
   type        = string
 
   validation {
-    condition     = length(trimspace(var.name)) >= 6 && length(trimspace(var.name)) <= 80
-    error_message = "The subnet name must contain between 6 and 80 characters."
-  }
+    condition = (
+      (
+        startswith(var.name, "snet-") &&
+        can(regex("^[a-z0-9-]+$", var.name)) &&
+        !endswith(var.name, "-")
+      )
+      ||
+      contains([
+        "AzureFirewallSubnet",
+        "AzureBastionSubnet",
+        "GatewaySubnet"
+      ], var.name)
+    )
 
-  validation {
-    condition     = can(regex("^snet-[a-z0-9]([a-z0-9-]*[a-z0-9])?$", trimspace(var.name)))
-    error_message = "The subnet name must start with 'snet-', use only lowercase letters, numbers, and hyphens, and must not end with a hyphen."
+    error_message = "The subnet name must start with 'snet-', use only lowercase letters, numbers, and hyphens, and must not end with a hyphen, unless it is an Azure reserved subnet name: AzureFirewallSubnet, AzureBastionSubnet, or GatewaySubnet."
   }
 }
 
