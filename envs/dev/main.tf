@@ -392,3 +392,60 @@ module "azure_firewall" {
 
   tags = var.tags
 }
+
+
+# ============================================================
+# FIREWALL RULE COLLECTION GROUP
+# ============================================================
+
+module "firewall_rule_collection_group" {
+  source = "../../modules/firewall_policy_rule_collection_group"
+
+  name               = "fwrcg-${var.environment}-weu"
+  firewall_policy_id = module.firewall_policy.id
+  priority           = 100
+
+  application_rule_collections = [
+    {
+      name     = "app-allow-web"
+      priority = 100
+      action   = "Allow"
+
+      rules = [
+        {
+          name = "allow-https"
+
+          source_addresses = [
+            "10.10.0.0/16"
+          ]
+
+          destination_fqdns = [
+            "*"
+          ]
+
+          protocol = {
+            type = "Https"
+            port = 443
+          }
+        }
+      ]
+    }
+  ]
+
+  network_rule_collections = []
+
+  nat_rule_collections = []
+}
+
+# ============================================================
+# ROUTE TO AZURE FIREWALL
+# ============================================================
+
+resource "azurerm_route" "spoke_to_firewall" {
+  name                   = "route-to-firewall"
+  resource_group_name    = module.resource_group.name
+  route_table_name       = module.spoke_route_table.name
+  address_prefix         = "0.0.0.0/0"
+  next_hop_type          = "VirtualAppliance"
+  next_hop_in_ip_address = module.azure_firewall.private_ip_address
+}
